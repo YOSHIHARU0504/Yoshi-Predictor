@@ -29,13 +29,15 @@ Documentación: http://127.0.0.1:8000/docs
 
 ## Variables
 
-Configura `API_FOOTBALL_KEY` localmente. Nunca publiques claves reales.
+Configura `API_FOOTBALL_KEY` y, opcionalmente, `DATABASE_PATH` localmente. Nunca publiques claves reales.
 
 ## Endpoints
 
 - `GET /health`
 - `POST /v1/markets/goals` (cálculo matemático con lambdas explícitas)
 - `GET /v1/fixtures?date=YYYY-MM-DD&league_id=...` (requiere API key)
+- `POST /v1/sync/fixtures?date=YYYY-MM-DD&league_id=...` (sincroniza fixtures en SQLite)
+- `GET /v1/history?league_id=...&season=...&limit=100` (consulta el historial local)
 
 ## Diseño
 
