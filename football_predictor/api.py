@@ -303,3 +303,72 @@ async def sofascore_team_count_markets(
         return {**rates, "probabilities": probabilities}
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+# Experimental direct SofaScore connector. This is read-only and does not bypass blocks.
+from datetime import date as date_type
+from football_predictor.data.sofascore import SofaScoreClient, SofaScoreError
+
+
+@app.get("/v1/sofascore/status")
+async def sofascore_status():
+    return {
+        "provider": "sofascore-experimental",
+        "mode": "direct-read-only",
+        "warning": "Endpointos internos no oficiales; pueden cambiar o bloquearse.",
+    }
+
+
+@app.get("/v1/sofascore/events")
+async def sofascore_events(day: date_type = Query(description="Fecha local YYYY-MM-DD")):
+    try:
+        events = await SofaScoreClient().scheduled_events(day)
+        return {
+            "provider": "sofascore-experimental",
+            "date": day.isoformat(),
+            "events": [
+                SofaScoreClient.normalize_event(event)
+                for event in events
+                if (event.get("homeTeam") or {}).get("id")
+                and (event.get("awayTeam") or {}).get("id")
+            ],
+        }
+    except SofaScoreError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/v1/sofascore/sync")
+async def sofascore_sync(
+    day: date_type = Query(description="Fecha YYYY-MM-DD"),
+    limit: int = Query(default=10, ge=1, le=20),
+):
+    client = SofaScoreClient()
+    try:
+        events = await client.scheduled_events(day)
+        selected = [
+            event for event in events
+            if (event.get("homeTeam") or {}).get("id")
+            and (event.get("awayTeam") or {}).get("id")
+        ][:limit]
+        normalized = []
+        for event in selected:
+            event_id = int(event.get("id") or 0)
+            if not event_id:
+                continue
+            try:
+                stats = await client.event_statistics(event_id)
+            except SofaScoreError:
+                # Stop immediately on a provider block or unexpected response.
+                raise
+            normalized.append(client.normalize_event(event, stats))
+        saved = import_sofascore_matches(normalized)
+        return {
+            "provider": "sofascore-experimental",
+            "date": day.isoformat(),
+            "events_found": len(events),
+            "events_requested": len(selected),
+            "saved_or_updated": saved,
+            "note": "Consulta directa experimental. Si el proveedor bloquea o limita, se detiene sin reintentos.",
+        }
+    except SofaScoreError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
