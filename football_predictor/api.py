@@ -32,7 +32,7 @@ async def goals_markets(request: GoalMarketRequest):
 
 @app.get("/v1/fixtures")
 async def fixtures(
-    date: str = Query(pattern=r"^\\d{4}-\\d{2}-\\d{2}$"),
+    date: str = Query(pattern=r"^\d{4}-\d{2}-\d{2}$"),
     league_id: int | None = Query(default=None, ge=1),
     season: int | None = Query(default=None, ge=1900, le=2100),
 ):
@@ -44,7 +44,7 @@ async def fixtures(
 
 @app.post("/v1/sync/fixtures")
 async def sync_fixtures(
-    date: str = Query(pattern=r"^\\d{4}-\\d{2}-\\d{2}$"),
+    date: str = Query(pattern=r"^\d{4}-\d{2}-\d{2}$"),
     league_id: int | None = Query(default=None, ge=1),
     season: int | None = Query(default=None, ge=1900, le=2100),
 ):
