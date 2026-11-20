@@ -228,3 +228,46 @@ def list_team_statistics(team_id: int | None = None, database_path: str | None =
             params,
         ).fetchall()
     return [dict(row) for row in rows]
+
+
+def team_count_rates(home_team_id: int, away_team_id: int, market: str,
+                     database_path: str | None = None, min_sample: int = 5) -> dict[str, Any]:
+    columns = {"corners": "corners", "yellow_cards": "yellow_cards", "red_cards": "red_cards"}
+    if market not in columns:
+        raise ValueError("Unsupported count market")
+    column = columns[market]
+    initialize_database(database_path)
+    query = f"""
+        SELECT AVG(s.{column}) AS average_count, COUNT(*) AS sample_size
+        FROM fixture_team_stats s
+        JOIN fixtures f ON f.fixture_id = s.fixture_id
+        WHERE s.team_id = ? AND f.home_team_id = s.team_id
+          AND f.away_team_id IS NOT NULL
+          AND f.home_goals IS NOT NULL AND f.away_goals IS NOT NULL
+          AND s.{column} IS NOT NULL
+    """
+    away_query = f"""
+        SELECT AVG(s.{column}) AS average_count, COUNT(*) AS sample_size
+        FROM fixture_team_stats s
+        JOIN fixtures f ON f.fixture_id = s.fixture_id
+        WHERE s.team_id = ? AND f.away_team_id = s.team_id
+          AND f.home_team_id IS NOT NULL
+          AND f.home_goals IS NOT NULL AND f.away_goals IS NOT NULL
+          AND s.{column} IS NOT NULL
+    """
+    with closing(_connect(database_path)) as connection:
+        home = connection.execute(query, (home_team_id,)).fetchone()
+        away = connection.execute(away_query, (away_team_id,)).fetchone()
+    if home["sample_size"] < min_sample or away["sample_size"] < min_sample:
+        raise ValueError(
+            f"Historial insuficiente: se requieren {min_sample} partidos como local/visitante; "
+            f"muestras actuales {home['sample_size']} y {away['sample_size']}."
+        )
+    return {
+        "market": market,
+        "home_team_id": home_team_id,
+        "away_team_id": away_team_id,
+        "lambda_home": float(home["average_count"]),
+        "lambda_away": float(away["average_count"]),
+        "samples": {"home_team_at_home": home["sample_size"], "away_team_away": away["sample_size"]},
+    }
