@@ -183,3 +183,21 @@ async def team_count_markets(
         return {**rates, "probabilities": probabilities}
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+
+@app.get("/v1/leagues")
+async def available_leagues(
+    season: int | None = Query(default=None, ge=1900, le=2100),
+    country: str | None = Query(default=None, min_length=2, max_length=80),
+):
+    try:
+        payload = await ApiFootballClient().leagues(country=country, season=season)
+        return {
+            "results": payload.get("results", 0),
+            "leagues": payload.get("response") or [],
+            "provider": "api-football",
+            "coverage_note": "La lista depende de la cobertura de tu plan y de la temporada solicitada.",
+        }
+    except ApiFootballError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
