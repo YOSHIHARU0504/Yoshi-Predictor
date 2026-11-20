@@ -64,6 +64,56 @@ Abre http://127.0.0.1:5500. La documentación interactiva de la API está en htt
 5. Repite la importación de estadísticas para una muestra suficiente. El endpoint `GET /v1/markets/team-counts` exige al menos cinco partidos estadísticos como local para el equipo local y cinco como visitante para el equipo visitante.
 6. Compara las estimaciones con resultados futuros no usados en el cálculo antes de considerar cualquier uso real.
 
+## Fuente complementaria: SofaScore
+
+SofaScore no publica una API de datos para desarrolladores. Su centro de ayuda indica que no puede compartir sus endpoints por acuerdos con proveedores; sus condiciones también restringen la extracción y reutilización automatizada de su base de datos. Por eso esta implementación **no consulta ni scrapea directamente SofaScore**. La integración acepta únicamente archivos JSON que el usuario tenga derecho a reutilizar.
+
+Se evaluó el proyecto comunitario [tunjayoff/sofascore_scraper](https://github.com/tunjayoff/sofascore_scraper), pero no se incorpora su scraper ni se automatizan llamadas a endpoints internos. Su licencia actual es PolyForm Noncommercial 1.0.0 y no sustituye el permiso necesario sobre los datos de SofaScore.
+
+### Importar JSON normalizado
+
+En el panel, sección **Importar datos SofaScore**, selecciona un JSON con esta estructura:
+
+```json
+{
+  "matches": [
+    {
+      "event_id": 123456,
+      "kickoff_utc": "2026-10-10T18:00:00Z",
+      "tournament_name": "Liga de ejemplo",
+      "season": "2026",
+      "status": "finished",
+      "home_goals": 2,
+      "away_goals": 1,
+      "home": {
+        "team_id": 100,
+        "team_name": "Equipo local",
+        "statistics": {
+          "corners": 6,
+          "yellow_cards": 2,
+          "red_cards": 0,
+          "shots_total": 14
+        }
+      },
+      "away": {
+        "team_id": 200,
+        "team_name": "Equipo visitante",
+        "statistics": {
+          "corners": 4,
+          "yellow_cards": 3,
+          "red_cards": 0,
+          "shots_total": 9
+        }
+      }
+    }
+  ]
+}
+```
+
+Se aceptan hasta 1,000 partidos por importación. Los datos se guardan en tablas separadas y los IDs SofaScore nunca se mezclan con los IDs API-Football. Para calcular tasas históricas usa `GET /v1/sofascore/team-counts?home_team_id=100&away_team_id=200&market=corners&line=8.5`. Se requieren cinco partidos finalizados por equipo en la condición correspondiente.
+
+La exportación de terceros puede requerir una transformación previa a este esquema; el endpoint no promete compatibilidad automática con cualquier formato de exportación. Los mercados SofaScore son una fuente independiente y deben validarse antes de compararlos con API-Football.
+
 ## Endpoints
 
 | Método | Ruta | Función |
