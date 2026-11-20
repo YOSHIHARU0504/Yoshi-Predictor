@@ -36,6 +36,7 @@ Configura `API_FOOTBALL_KEY` y, opcionalmente, `DATABASE_PATH` localmente. Nunca
 - `GET /health`
 - `POST /v1/markets/goals` (cálculo matemático con lambdas explícitas)
 - `GET /v1/fixtures?date=YYYY-MM-DD&league_id=...` (requiere API key)
+- `GET /v1/leagues?season=...&country=...` (catálogo disponible en API-Football)
 - `POST /v1/sync/fixtures?date=YYYY-MM-DD&league_id=...` (sincroniza fixtures en SQLite)
 - `GET /v1/history?league_id=...&season=...&limit=100` (consulta el historial local)
 - `POST /v1/sync/league-season?league_id=...&season=...` (importa el historial de una competición)
