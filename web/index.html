@@ -32,6 +32,11 @@
           <button class="btn btn-primary" id="sync-btn">↻ Importar temporada</button>
           <button class="btn btn-ghost" id="history-btn">Ver historial</button>
         </div>
+        <div class="panel controls compact" style="margin-top:12px">
+          <div class="field"><label for="league-country">PAÍS (OPCIONAL)</label><input id="league-country" placeholder="Ej. England, Peru"></div>
+          <button class="btn btn-ghost" id="load-leagues-btn">Buscar competiciones disponibles</button>
+          <div class="field"><label for="league-catalog">COMPETICIÓN ENCONTRADA</label><select id="league-catalog"><option value="">Primero busca ligas</option></select></div>
+        </div>
         <p class="hint" id="sync-message">La importación consume cuota de API-Football. Usa una liga y temporada disponibles en tu plan.</p>
         <div class="panel table-panel"><div class="panel-head"><h3>Historial importado</h3><span id="history-count">0 partidos</span></div><div class="table-scroll"><table><thead><tr><th>FECHA</th><th>LOCAL</th><th>VISITANTE</th><th>MARCADOR</th><th>ESTADO</th></tr></thead><tbody id="history-body"><tr><td colspan="5" class="empty">Importa una temporada para comenzar.</td></tr></tbody></table></div></div>
       </section>
