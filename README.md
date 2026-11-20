@@ -66,9 +66,22 @@ Abre http://127.0.0.1:5500. La documentación interactiva de la API está en htt
 
 ## Fuente complementaria: SofaScore
 
-SofaScore no publica una API de datos para desarrolladores. Su centro de ayuda indica que no puede compartir sus endpoints por acuerdos con proveedores; sus condiciones también restringen la extracción y reutilización automatizada de su base de datos. Por eso esta implementación **no consulta ni scrapea directamente SofaScore**. La integración acepta únicamente archivos JSON que el usuario tenga derecho a reutilizar.
+SofaScore no publica una API oficial para desarrolladores. Para experimentación personal, esta rama incluye un **conector directo no oficial y de solo lectura** a endpoints usados por la web de SofaScore. Puede dejar de funcionar en cualquier momento, cambiar de formato o responder 403/429. No hay proxies, rotación de IP, evasión de CAPTCHA ni reintentos automáticos: ante 403 o 429 se detiene la operación y se muestra el error. Usa el conector respetando las condiciones aplicables y no redistribuyas los datos.
 
-Se evaluó el proyecto comunitario [tunjayoff/sofascore_scraper](https://github.com/tunjayoff/sofascore_scraper), pero no se incorpora su scraper ni se automatizan llamadas a endpoints internos. Su licencia actual es PolyForm Noncommercial 1.0.0 y no sustituye el permiso necesario sobre los datos de SofaScore.
+El cliente experimental está en `football_predictor/data/sofascore.py`. Consulta partidos por fecha y estadísticas individuales de cada evento, normaliza goles, córners, tarjetas y tiros, y almacena los IDs SofaScore separados de API-Football. No es un servicio oficial ni se garantiza disponibilidad.
+
+### Probar conexión directa experimental
+
+1. Inicia el backend y abre el panel web.
+2. En **SofaScore directo**, selecciona una fecha.
+3. Pulsa **Consultar partidos** para probar el endpoint de calendario.
+4. Pulsa **Importar estadísticas (máx. 10)** para consultar estadísticas partido por partido y guardarlas en SQLite.
+5. Si aparece HTTP 403 o 429, la prueba se detiene. No sigas repitiendo solicitudes.
+
+Endpoints:
+- `GET /v1/sofascore/status`
+- `GET /v1/sofascore/events?day=2026-11-20`
+- `POST /v1/sofascore/sync?day=2026-11-20&limit=10`
 
 ### Importar JSON normalizado
 
