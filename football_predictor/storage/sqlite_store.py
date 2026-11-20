@@ -131,7 +131,7 @@ def list_fixtures(
     with closing(_connect(database_path)) as connection:
         rows = connection.execute(
             f"SELECT fixture_id, kickoff_utc, status_short, league_id, league_name, "
-            f"country, season, home_team, away_team, home_goals, away_goals, updated_at "
+            f"country, season, home_team_id, home_team, away_team_id, away_team, home_goals, away_goals, updated_at "
             f"FROM fixtures {where} ORDER BY kickoff_utc DESC LIMIT ?",
             params,
         ).fetchall()
