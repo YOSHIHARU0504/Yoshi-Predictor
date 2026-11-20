@@ -21,10 +21,10 @@
         <article class="stat-card"><span>PARTIDOS EN HISTORIAL</span><strong id="stat-matches">--</strong><small>Base local SQLite</small></article>
         <article class="stat-card"><span>LIGAS DISPONIBLES</span><strong id="stat-leagues">--</strong><small>Según datos importados</small></article>
         <article class="stat-card"><span>MOTOR ACTIVO</span><strong>POISSON + ELO</strong><small>Modelos iniciales</small></article>
-        <article class="stat-card"><span>MERCADOS</span><strong>2 / 5</strong><small>Goles y resultados habilitados</small></article>
+        <article class="stat-card"><span>MERCADOS</span><strong>6 GRUPOS</strong><small>1X2, goles, BTTS, córners y tarjetas</small></article>
       </section>
       <section class="workspace">
-        <div class="section-heading"><div><p class="eyebrow">01 / DATOS</p><h2>Centro de partidos</h2></div><span class="section-note">Sin datos no hay pronóstico</span></div>
+        <div class="section-heading"><div><p class="eyebrow">01 / DATOS</p><h2>Centro de partidos</h2></div><span class="section-note">Sin datos no hay pronóstico fiable</span></div>
         <div class="panel controls">
           <div class="field"><label for="api-url">URL DEL BACKEND</label><input id="api-url" value="http://127.0.0.1:8000"></div>
           <div class="field"><label for="league-id">ID DE LIGA</label><input id="league-id" type="number" min="1" placeholder="Ej. 39"></div>
@@ -70,7 +70,7 @@
           <button class="btn btn-ghost" id="auto-count-btn">Estimar desde historial</button>
         </div>
         <div class="panel results" id="count-results"><div class="empty">Introduce medias históricas verificadas para explorar una línea.</div></div>
-        <p class="hint">Las medias son entradas manuales en esta fase. La predicción automática por equipo se habilitará cuando el historial estadístico tenga cobertura suficiente y se valide.</p>
+        <p class="hint">Para estimar automáticamente, primero importa fixtures y luego importa las estadísticas de cada partido terminado desde /docs usando POST /v1/sync/statistics?fixture_id=ID. Se requieren al menos cinco muestras como local y cinco como visitante. La estimación usa promedios históricos Poisson y aún no está calibrada.</p>
       </section>
       <footer><span>FOOTBALL PREDICTOR</span><span>Construido para analizar, medir y mejorar. No garantiza resultados.</span></footer>
     </main>
