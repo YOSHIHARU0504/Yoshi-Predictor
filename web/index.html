@@ -72,6 +72,20 @@
         <div class="panel results" id="count-results"><div class="empty">Introduce medias históricas verificadas para explorar una línea.</div></div>
         <p class="hint">Para estimar automáticamente, primero importa fixtures y luego importa las estadísticas de cada partido terminado desde /docs usando POST /v1/sync/statistics?fixture_id=ID. Se requieren al menos cinco muestras como local y cinco como visitante. La estimación usa promedios históricos Poisson y aún no está calibrada.</p>
       </section>
+      <section class="workspace">
+        <div class="section-heading"><div><p class="eyebrow">05 / FUENTE COMPLEMENTARIA</p><h2>Importar datos SofaScore</h2></div><span class="section-note">Importación local, sin scraping automático</span></div>
+        <div class="panel controls">
+          <div class="field"><label for="sofascore-file">ARCHIVO JSON NORMALIZADO</label><input id="sofascore-file" type="file" accept=".json,application/json"></div>
+          <button class="btn btn-primary" id="sofascore-import-btn">Importar archivo</button>
+        </div>
+        <p class="hint" id="sofascore-message">Importa un archivo JSON con partidos finalizados, IDs SofaScore y estadísticas de ambos equipos. Esta fuente conserva sus propios IDs y no se mezcla con API-Football. No uses datos cuya reutilización no esté autorizada.</p>
+        <div class="panel controls compact">
+          <div class="field"><label for="ss-home-team-id">ID SOFASCORE LOCAL</label><input id="ss-home-team-id" type="number" min="1"></div>
+          <div class="field"><label for="ss-away-team-id">ID SOFASCORE VISITANTE</label><input id="ss-away-team-id" type="number" min="1"></div>
+          <button class="btn btn-ghost" id="ss-auto-count-btn">Calcular con historial SofaScore</button>
+        </div>
+        <p class="hint">Formato requerido y ejemplo en README. Se necesitan al menos cinco partidos históricos con estadísticas para cada equipo en su condición correspondiente.</p>
+      </section>
       <footer><span>FOOTBALL PREDICTOR</span><span>Construido para analizar, medir y mejorar. No garantiza resultados.</span></footer>
     </main>
   </div>
