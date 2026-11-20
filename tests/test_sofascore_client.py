@@ -1,4 +1,5 @@
 from datetime import date
+import asyncio
 
 import pytest
 
@@ -39,8 +40,7 @@ def test_normalize_missing_statistics_is_safe():
     assert result["away"]["statistics"] == {}
 
 
-@pytest.mark.asyncio
-async def test_http_403_is_not_retried_or_bypassed(monkeypatch):
+def test_http_403_is_not_retried_or_bypassed(monkeypatch):
     class Response:
         status_code = 403
         def json(self):
@@ -58,4 +58,4 @@ async def test_http_403_is_not_retried_or_bypassed(monkeypatch):
 
     monkeypatch.setattr("football_predictor.data.sofascore.httpx.AsyncClient", Client)
     with pytest.raises(SofaScoreError, match="HTTP 403"):
-        await SofaScoreClient().scheduled_events(date(2026, 11, 20))
+        asyncio.run(SofaScoreClient().scheduled_events(date(2026, 11, 20)))
