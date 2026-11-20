@@ -159,6 +159,47 @@ async def sync_statistics(fixture_id: int = Query(ge=1)):
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
+@app.post("/v1/sync/statistics-batch")
+async def sync_statistics_batch(
+    league_id: int = Query(ge=1),
+    season: int = Query(ge=1900, le=2100),
+    limit: int = Query(default=20, ge=1, le=50),
+):
+    """Import statistics sequentially for the most recent finished fixtures in local history.
+
+    Each fixture consumes a provider request. The limit is deliberately capped to
+    protect API quotas; repeat calls to continue filling the sample.
+    """
+    fixtures = list_fixtures(league_id=league_id, season=season, limit=500)
+    finished = [
+        item for item in fixtures
+        if item.get("home_goals") is not None
+        and item.get("away_goals") is not None
+        and item.get("status_short") in {"FT", "AET", "PEN"}
+    ][:limit]
+    client = ApiFootballClient()
+    results = []
+    for item in finished:
+        fixture_id = item["fixture_id"]
+        try:
+            payload = await client.fixture_statistics(fixture_id)
+            saved = save_fixture_statistics(fixture_id, payload.get("response") or [])
+            results.append({"fixture_id": fixture_id, "saved": saved, "status": "ok"})
+        except ApiFootballError as exc:
+            results.append({"fixture_id": fixture_id, "saved": 0, "status": "error", "detail": str(exc)})
+            if "quota" in str(exc).lower() or "rate" in str(exc).lower():
+                break
+    return {
+        "league_id": league_id,
+        "season": season,
+        "requested_limit": limit,
+        "processed": len(results),
+        "successful": sum(item["status"] == "ok" for item in results),
+        "saved_team_rows": sum(item["saved"] for item in results),
+        "results": results,
+        "quota_warning": "Cada fixture consume una solicitud de API-Football. Revisa tu cuota antes de repetir.",
+    }
+
 @app.get("/v1/statistics/teams")
 async def team_statistics(
     team_id: int | None = Query(default=None, ge=1),
