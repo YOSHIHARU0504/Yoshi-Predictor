@@ -59,6 +59,11 @@
           <div class="field"><label for="count-line">LÍNEA</label><input id="count-line" type="number" min="0" max="40" step=".5" value="8.5"></div>
           <button class="btn btn-primary" id="count-btn">Calcular línea</button>
         </div>
+        <div class="panel controls compact" style="margin-top:12px">
+          <div class="field"><label for="home-team-id">ID EQUIPO LOCAL</label><input id="home-team-id" type="number" min="1" placeholder="ID API-Football"></div>
+          <div class="field"><label for="away-team-id">ID EQUIPO VISITANTE</label><input id="away-team-id" type="number" min="1" placeholder="ID API-Football"></div>
+          <button class="btn btn-ghost" id="auto-count-btn">Estimar desde historial</button>
+        </div>
         <div class="panel results" id="count-results"><div class="empty">Introduce medias históricas verificadas para explorar una línea.</div></div>
         <p class="hint">Las medias son entradas manuales en esta fase. La predicción automática por equipo se habilitará cuando el historial estadístico tenga cobertura suficiente y se valide.</p>
       </section>
