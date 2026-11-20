@@ -49,3 +49,6 @@ class ApiFootballClient:
         if season is not None:
             params["season"] = season
         return await self._get("leagues", params)
+
+    async def fixture_statistics(self, fixture_id: int):
+        return await self._get("fixtures/statistics", {"fixture": fixture_id})
