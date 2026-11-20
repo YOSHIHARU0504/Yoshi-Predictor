@@ -67,7 +67,7 @@
         <div class="panel controls compact" style="margin-top:12px">
           <div class="field"><label for="home-team-id">ID EQUIPO LOCAL</label><input id="home-team-id" type="number" min="1" placeholder="ID API-Football"></div>
           <div class="field"><label for="away-team-id">ID EQUIPO VISITANTE</label><input id="away-team-id" type="number" min="1" placeholder="ID API-Football"></div>
-          <button class="btn btn-ghost" id="auto-count-btn">Estimar desde historial</button>
+          <button class="btn btn-ghost" id="auto-count-btn">Estimar desde historial</button><button class="btn btn-ghost" id="batch-stats-btn">Importar estadísticas (20)</button>
         </div>
         <div class="panel results" id="count-results"><div class="empty">Introduce medias históricas verificadas para explorar una línea.</div></div>
         <p class="hint">Para estimar automáticamente, primero importa fixtures y luego importa las estadísticas de cada partido terminado desde /docs usando POST /v1/sync/statistics?fixture_id=ID. Se requieren al menos cinco muestras como local y cinco como visitante. La estimación usa promedios históricos Poisson y aún no está calibrada.</p>
