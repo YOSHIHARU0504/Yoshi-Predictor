@@ -60,7 +60,7 @@ Abre http://127.0.0.1:5500. La documentación interactiva de la API está en htt
 1. En el panel, busca competiciones por país/temporada o introduce el ID de liga conocido.
 2. Importa una liga y temporada disponibles en tu plan. Esto guarda fixtures y resultados en SQLite.
 3. Consulta el historial y ejecuta el backtest Elo cuando existan al menos 30 partidos finalizados.
-4. Para córners/tarjetas, identifica IDs de fixtures terminados y llama a `POST /v1/sync/statistics?fixture_id=ID` desde Swagger. La importación de fixtures por sí sola no incluye estadísticas.
+4. Para córners/tarjetas, usa el botón **Importar estadísticas (20)** del panel o llama a `POST /v1/sync/statistics-batch?league_id=ID&season=AAAA&limit=20`. Cada partido consume una solicitud API. También puedes importar uno por uno con `POST /v1/sync/statistics?fixture_id=ID`. La importación de fixtures por sí sola no incluye estadísticas.
 5. Repite la importación de estadísticas para una muestra suficiente. El endpoint `GET /v1/markets/team-counts` exige al menos cinco partidos estadísticos como local para el equipo local y cinco como visitante para el equipo visitante.
 6. Compara las estimaciones con resultados futuros no usados en el cálculo antes de considerar cualquier uso real.
 
