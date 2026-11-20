@@ -5,7 +5,8 @@ from pydantic import BaseModel, Field
 from football_predictor.data.api_football import ApiFootballClient, ApiFootballError
 from football_predictor.models.poisson import predict_goal_markets
 from football_predictor.models.elo import run_elo_backtest
-from football_predictor.storage.sqlite_store import list_fixtures, save_fixtures
+from football_predictor.models.counts import count_market
+from football_predictor.storage.sqlite_store import (\n    list_fixtures, save_fixtures, save_fixture_statistics, list_team_statistics\n)
 
 app = FastAPI(
     title="FOOTBALL PREDICTOR",
@@ -122,3 +123,45 @@ async def elo_backtest(
             detail=f"Historial insuficiente: se necesitan al menos 30 partidos terminados; hay {len(finished)}.",
         )
     return run_elo_backtest(finished)
+
+
+
+class CountMarketRequest(BaseModel):
+    market: str = Field(pattern=r"^(corners|yellow_cards|red_cards)$")
+    lambda_home: float = Field(ge=0, le=40)
+    lambda_away: float = Field(ge=0, le=40)
+    line: float = Field(ge=0, le=40)
+
+
+@app.post("/v1/markets/counts")
+async def count_markets(request: CountMarketRequest):
+    try:
+        return count_market(
+            request.lambda_home, request.lambda_away, request.line, request.market
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/v1/sync/statistics")
+async def sync_statistics(fixture_id: int = Query(ge=1)):
+    try:
+        payload = await ApiFootballClient().fixture_statistics(fixture_id)
+        items = payload.get("response") or []
+        saved = save_fixture_statistics(fixture_id, items)
+        return {
+            "fixture_id": fixture_id,
+            "teams_received": len(items),
+            "team_rows_saved": saved,
+            "provider": "api-football",
+        }
+    except ApiFootballError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.get("/v1/statistics/teams")
+async def team_statistics(
+    team_id: int | None = Query(default=None, ge=1),
+    limit: int = Query(default=1000, ge=1, le=5000),
+):
+    return {"statistics": list_team_statistics(team_id=team_id, limit=limit)}
