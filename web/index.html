@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FOOTBALL PREDICTOR | Yoshi</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="#"><span class="brand-mark">FP</span><span>FOOTBALL <b>PREDICTOR</b><small>YOSHI ANALYTICS ENGINE</small></span></a>
+      <div class="top-right"><span class="status-dot"></span><span id="api-status">Comprobando API...</span><span class="version">v0.2</span></div>
+    </header>
+    <main>
+      <section class="hero">
+        <div><p class="eyebrow">CENTRO DE INTELIGENCIA DEPORTIVA</p><h1>El partido se juega.<br><em>Los datos hablan.</em></h1><p class="hero-copy">Análisis estadístico, probabilidades y validación histórica en un solo lugar.</p></div>
+        <div class="hero-orb"><div class="orb-inner">⚽</div><span class="orb-ring ring-one"></span><span class="orb-ring ring-two"></span></div>
+      </section>
+      <section class="stat-grid">
+        <article class="stat-card"><span>PARTIDOS EN HISTORIAL</span><strong id="stat-matches">--</strong><small>Base local SQLite</small></article>
+        <article class="stat-card"><span>LIGAS DISPONIBLES</span><strong id="stat-leagues">--</strong><small>Según datos importados</small></article>
+        <article class="stat-card"><span>MOTOR ACTIVO</span><strong>POISSON + ELO</strong><small>Modelos iniciales</small></article>
+        <article class="stat-card"><span>MERCADOS</span><strong>2 / 5</strong><small>Goles y resultados habilitados</small></article>
+      </section>
+      <section class="workspace">
+        <div class="section-heading"><div><p class="eyebrow">01 / DATOS</p><h2>Centro de partidos</h2></div><span class="section-note">Sin datos no hay pronóstico</span></div>
+        <div class="panel controls">
+          <div class="field"><label for="api-url">URL DEL BACKEND</label><input id="api-url" value="http://127.0.0.1:8000"></div>
+          <div class="field"><label for="league-id">ID DE LIGA</label><input id="league-id" type="number" min="1" placeholder="Ej. 39"></div>
+          <div class="field"><label for="season">TEMPORADA</label><input id="season" type="number" min="1900" max="2100" value="2026"></div>
+          <button class="btn btn-primary" id="sync-btn">↻ Importar temporada</button>
+          <button class="btn btn-ghost" id="history-btn">Ver historial</button>
+        </div>
+        <p class="hint" id="sync-message">La importación consume cuota de API-Football. Usa una liga y temporada disponibles en tu plan.</p>
+        <div class="panel table-panel"><div class="panel-head"><h3>Historial importado</h3><span id="history-count">0 partidos</span></div><div class="table-scroll"><table><thead><tr><th>FECHA</th><th>LOCAL</th><th>VISITANTE</th><th>MARCADOR</th><th>ESTADO</th></tr></thead><tbody id="history-body"><tr><td colspan="5" class="empty">Importa una temporada para comenzar.</td></tr></tbody></table></div></div>
+      </section>
+      <section class="workspace">
+        <div class="section-heading"><div><p class="eyebrow">02 / VALIDACIÓN</p><h2>Backtesting Elo</h2></div><span class="section-note">Predicción cronológica antes de cada resultado</span></div>
+        <div class="panel controls compact"><div class="field"><label for="backtest-season">TEMPORADA</label><input id="backtest-season" type="number" value="2026"></div><button class="btn btn-primary" id="backtest-btn">Ejecutar backtest</button></div>
+        <div class="metric-grid" id="backtest-results"><div class="metric"><small>PARTIDOS EVALUADOS</small><strong>--</strong></div><div class="metric"><small>ACCURACY</small><strong>--</strong></div><div class="metric"><small>BRIER SCORE</small><strong>--</strong></div></div>
+        <p class="hint">El backtest requiere al menos 30 partidos finalizados. Sus resultados son exploratorios y no garantizan rendimiento futuro.</p>
+      </section>
+      <section class="workspace">
+        <div class="section-heading"><div><p class="eyebrow">03 / PROBABILIDADES</p><h2>Laboratorio de goles</h2></div><span class="section-note">Poisson independiente</span></div>
+        <div class="panel controls">
+          <div class="field"><label for="lambda-home">GOLES ESPERADOS LOCAL</label><input id="lambda-home" type="number" min="0" max="10" step=".05" value="1.55"></div>
+          <div class="field"><label for="lambda-away">GOLES ESPERADOS VISITANTE</label><input id="lambda-away" type="number" min="0" max="10" step=".05" value="1.10"></div>
+          <button class="btn btn-primary" id="calculate-btn">Calcular mercados</button>
+        </div>
+        <div class="panel results" id="goal-results"><div class="empty">Introduce goles esperados para explorar las probabilidades matemáticas.</div></div>
+      </section>
+      <footer><span>FOOTBALL PREDICTOR</span><span>Construido para analizar, medir y mejorar. No garantiza resultados.</span></footer>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
