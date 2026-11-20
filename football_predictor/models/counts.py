@@ -4,7 +4,7 @@ from __future__ import annotations
 from math import exp, factorial
 
 
-def _distribution(rate: float, cap: int = 40) -> list[float]:
+def _distribution(rate: float, cap: int = 120) -> list[float]:
     if not 0 <= rate <= 40:
         raise ValueError("Expected count must be between 0 and 40")
     values = [exp(-rate) * rate**k / factorial(k) for k in range(cap + 1)]
@@ -20,7 +20,7 @@ def count_market(lambda_home: float, lambda_away: float, line: float,
         raise ValueError("Line must be between 0 and 40")
     home = _distribution(lambda_home)
     away = _distribution(lambda_away)
-    total = [0.0] * 81
+    total = [0.0] * 241
     for h, ph in enumerate(home):
         for a, pa in enumerate(away):
             total[h + a] += ph * pa
