@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from football_predictor.data.api_football import ApiFootballClient, ApiFootballError
@@ -10,6 +11,13 @@ app = FastAPI(
     title="FOOTBALL PREDICTOR",
     version="0.1.0",
     description="Motor modular de probabilidades de fútbol. Los mercados se habilitan según cobertura y validación.",
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:5500", "http://localhost:5500", "http://127.0.0.1:5173", "http://localhost:5173"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 
