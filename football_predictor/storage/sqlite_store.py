@@ -46,6 +46,25 @@ def initialize_database(database_path: str | None = None) -> None:
         connection.execute(
             "CREATE INDEX IF NOT EXISTS idx_fixtures_league ON fixtures(league_id, season)"
         )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS fixture_team_stats (
+                fixture_id INTEGER NOT NULL,
+                team_id INTEGER NOT NULL,
+                team_name TEXT,
+                corners INTEGER,
+                yellow_cards INTEGER,
+                red_cards INTEGER,
+                shots_total INTEGER,
+                raw_json TEXT NOT NULL,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (fixture_id, team_id)
+            )
+            """
+        )
+        connection.execute(
+            "CREATE INDEX IF NOT EXISTS idx_team_stats_team ON fixture_team_stats(team_id)"
+        )
         connection.commit()
 
 
@@ -133,6 +152,79 @@ def list_fixtures(
             f"SELECT fixture_id, kickoff_utc, status_short, league_id, league_name, "
             f"country, season, home_team_id, home_team, away_team_id, away_team, home_goals, away_goals, updated_at "
             f"FROM fixtures {where} ORDER BY kickoff_utc DESC LIMIT ?",
+            params,
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+
+def _stat_value(statistics: list[dict[str, Any]], *names: str) -> int | None:
+    wanted = {name.casefold() for name in names}
+    for item in statistics:
+        if str(item.get("type", "")).casefold() in wanted:
+            value = item.get("value")
+            if value is None:
+                return None
+            try:
+                return int(str(value).replace("%", ""))
+            except (TypeError, ValueError):
+                return None
+    return None
+
+
+def save_fixture_statistics(fixture_id: int, response: list[dict[str, Any]],
+                            database_path: str | None = None) -> int:
+    initialize_database(database_path)
+    rows = []
+    for team_block in response:
+        team = team_block.get("team") or {}
+        team_id = team.get("id")
+        if team_id is None:
+            continue
+        stats = team_block.get("statistics") or []
+        rows.append((
+            fixture_id,
+            team_id,
+            team.get("name"),
+            _stat_value(stats, "Corner Kicks", "Corners"),
+            _stat_value(stats, "Yellow Cards"),
+            _stat_value(stats, "Red Cards"),
+            _stat_value(stats, "Total Shots"),
+            json.dumps(team_block, ensure_ascii=False),
+        ))
+    with closing(_connect(database_path)) as connection:
+        connection.executemany(
+            """
+            INSERT INTO fixture_team_stats (
+                fixture_id, team_id, team_name, corners, yellow_cards, red_cards,
+                shots_total, raw_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(fixture_id, team_id) DO UPDATE SET
+                team_name=excluded.team_name,
+                corners=excluded.corners,
+                yellow_cards=excluded.yellow_cards,
+                red_cards=excluded.red_cards,
+                shots_total=excluded.shots_total,
+                raw_json=excluded.raw_json,
+                updated_at=CURRENT_TIMESTAMP
+            """,
+            rows,
+        )
+        connection.commit()
+    return len(rows)
+
+
+def list_team_statistics(team_id: int | None = None, database_path: str | None = None,
+                          limit: int = 1000) -> list[dict[str, Any]]:
+    initialize_database(database_path)
+    where = "WHERE team_id = ?" if team_id is not None else ""
+    params: list[Any] = [team_id] if team_id is not None else []
+    params.append(max(1, min(limit, 5000)))
+    with closing(_connect(database_path)) as connection:
+        rows = connection.execute(
+            f"SELECT fixture_id, team_id, team_name, corners, yellow_cards, red_cards, "
+            f"shots_total, updated_at FROM fixture_team_stats {where} "
+            f"ORDER BY fixture_id DESC LIMIT ?",
             params,
         ).fetchall()
     return [dict(row) for row in rows]
