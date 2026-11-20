@@ -20,24 +20,27 @@ $('league-catalog').onchange=()=>{if($('league-catalog').value)$('league-id').va
 $('batch-stats-btn').onclick=async()=>{const league=$('league-id').value,season=$('season').value;if(!league||!season){$('count-results').innerHTML='<div class="empty">Selecciona primero liga y temporada.</div>';return}const b=$('batch-stats-btn');b.disabled=true;b.textContent='Importando...';try{const q=new URLSearchParams({league_id:league,season,limit:'20'});const d=await request('/v1/sync/statistics-batch?'+q,{method:'POST'});$('count-results').innerHTML='<div class="result-block"><h4>IMPORTACIÓN DE ESTADÍSTICAS</h4><div class="result-line"><span>Partidos procesados</span><b>'+d.processed+'</b></div><div class="result-line"><span>Importaciones correctas</span><b>'+d.successful+'</b></div><div class="result-line"><span>Filas de equipos guardadas</span><b>'+d.saved_team_rows+'</b></div></div><div class="result-block"><h4>CUOTA API</h4><p style="font-size:12px;color:#9aab9f;line-height:1.6">'+esc(d.quota_warning)+'</p></div><div class="result-block"><h4>DETALLE</h4>'+d.results.map(x=>'<div class="result-line"><span>Fixture '+x.fixture_id+'</span><b>'+esc(x.status)+'</b></div>').join('')+'</div>'}catch(e){$('count-results').innerHTML='<div class="empty">'+esc(e.message)+'</div>'}finally{b.disabled=false;b.textContent='Importar estadísticas (20)'}};
 
 
-$('sofascore-import-btn').onclick=async()=>{
-  const file=$('sofascore-file').files?.[0];
-  if(!file){$('sofascore-message').textContent='Selecciona primero un archivo JSON.';return}
-  const b=$('sofascore-import-btn');b.disabled=true;b.textContent='Importando...';
+
+const ssDate=$('sofascore-date');
+if(ssDate&&!ssDate.value){const now=new Date();ssDate.value=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-')}
+$('sofascore-events-btn').onclick=async()=>{
+  const day=ssDate.value;if(!day){$('sofascore-message').textContent='Selecciona una fecha.';return}
+  const b=$('sofascore-events-btn');b.disabled=true;b.textContent='Consultando...';
   try{
-    const payload=JSON.parse(await file.text());
-    const data=await request('/v1/sofascore/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    $('sofascore-message').textContent='SofaScore: '+data.received+' partidos recibidos; '+data.saved_or_updated+' guardados/actualizados. '+data.note;
-  }catch(e){$('sofascore-message').textContent='No se pudo importar: '+e.message}
-  finally{b.disabled=false;b.textContent='Importar archivo'}
+    const d=await request('/v1/sofascore/events?'+new URLSearchParams({day}));
+    const events=d.events||[];
+    $('sofascore-results').innerHTML=events.length?events.map(e=>'<div class="result-line"><span>'+esc(e.tournament_name||'Fútbol')+' · '+esc(e.home.team_name)+' vs '+esc(e.away.team_name)+'</span><b>'+(e.home_goals??'-')+' : '+(e.away_goals??'-')+'</b></div>').join(''):'<div class="empty">SofaScore no devolvió partidos para esta fecha.</div>';
+    $('sofascore-message').textContent='Consulta correcta: '+events.length+' partidos. Fuente experimental no oficial.';
+  }catch(e){$('sofascore-message').textContent=e.message;$('sofascore-results').innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
+  finally{b.disabled=false;b.textContent='Consultar partidos'}
 };
-$('ss-auto-count-btn').onclick=async()=>{
-  const home=$('ss-home-team-id').value,away=$('ss-away-team-id').value;
-  if(!home||!away){$('sofascore-message').textContent='Introduce ambos IDs de equipo SofaScore.';return}
+$('sofascore-sync-btn').onclick=async()=>{
+  const day=ssDate.value;if(!day){$('sofascore-message').textContent='Selecciona una fecha.';return}
+  const b=$('sofascore-sync-btn');b.disabled=true;b.textContent='Importando...';
   try{
-    const q=new URLSearchParams({home_team_id:home,away_team_id:away,market:$('count-market').value,line:$('count-line').value});
-    const d=await request('/v1/sofascore/team-counts?'+q);
-    $('count-home').value=d.lambda_home.toFixed(2);$('count-away').value=d.lambda_away.toFixed(2);
-    $('count-results').innerHTML='<div class="result-block"><h4>SOFASCORE · '+esc(d.market.toUpperCase())+'</h4><div class="result-line"><span>Over '+d.probabilities.line+'</span><b>'+pct(d.probabilities.over)+'</b></div><div class="result-line"><span>Under '+d.probabilities.line+'</span><b>'+pct(d.probabilities.under)+'</b></div><div class="result-line"><span>Partidos local</span><b>'+d.samples.home_team_at_home+'</b></div><div class="result-line"><span>Partidos visitante</span><b>'+d.samples.away_team_away+'</b></div></div>';
-  }catch(e){$('sofascore-message').textContent=e.message}
+    const d=await request('/v1/sofascore/sync?'+new URLSearchParams({day,limit:'10'}),{method:'POST'});
+    $('sofascore-message').textContent='Importados '+d.saved_or_updated+' partidos. Encontrados: '+d.events_found+'. Se consultaron estadísticas individuales sin reintentos.';
+    $('sofascore-results').innerHTML='<div class="result-line"><span>Partidos encontrados</span><b>'+d.events_found+'</b></div><div class="result-line"><span>Partidos guardados</span><b>'+d.saved_or_updated+'</b></div><div class="result-line"><span>Proveedor</span><b>SofaScore experimental</b></div>';
+  }catch(e){$('sofascore-message').textContent=e.message;$('sofascore-results').innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
+  finally{b.disabled=false;b.textContent='Importar estadísticas (máx. 10)'}
 };
