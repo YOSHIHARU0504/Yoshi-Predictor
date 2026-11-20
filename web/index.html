@@ -73,12 +73,14 @@
         <p class="hint">Para estimar automáticamente, primero importa fixtures y luego importa las estadísticas de cada partido terminado desde /docs usando POST /v1/sync/statistics?fixture_id=ID. Se requieren al menos cinco muestras como local y cinco como visitante. La estimación usa promedios históricos Poisson y aún no está calibrada.</p>
       </section>
       <section class="workspace">
-        <div class="section-heading"><div><p class="eyebrow">05 / FUENTE COMPLEMENTARIA</p><h2>Importar datos SofaScore</h2></div><span class="section-note">Importación local, sin scraping automático</span></div>
+        <div class="section-heading"><div><p class="eyebrow">05 / FUENTE COMPLEMENTARIA</p><h2>SofaScore directo</h2></div><span class="section-note">Conector experimental no oficial</span></div>
         <div class="panel controls">
-          <div class="field"><label for="sofascore-file">ARCHIVO JSON NORMALIZADO</label><input id="sofascore-file" type="file" accept=".json,application/json"></div>
-          <button class="btn btn-primary" id="sofascore-import-btn">Importar archivo</button>
+          <div class="field"><label for="sofascore-date">FECHA DE PARTIDOS</label><input id="sofascore-date" type="date"></div>
+          <button class="btn btn-ghost" id="sofascore-events-btn">Consultar partidos</button>
+          <button class="btn btn-primary" id="sofascore-sync-btn">Importar estadísticas (máx. 10)</button>
         </div>
-        <p class="hint" id="sofascore-message">Importa un archivo JSON con partidos finalizados, IDs SofaScore y estadísticas de ambos equipos. Esta fuente conserva sus propios IDs y no se mezcla con API-Football. No uses datos cuya reutilización no esté autorizada.</p>
+        <div class="panel results" id="sofascore-results"><div class="empty">Selecciona una fecha para consultar partidos.</div></div>
+        <p class="hint" id="sofascore-message">Conector experimental a endpoints internos no oficiales. Si SofaScore responde 403 o 429, se detiene inmediatamente. Sin proxies, evasión ni reintentos.</p>
         <div class="panel controls compact">
           <div class="field"><label for="ss-home-team-id">ID SOFASCORE LOCAL</label><input id="ss-home-team-id" type="number" min="1"></div>
           <div class="field"><label for="ss-away-team-id">ID SOFASCORE VISITANTE</label><input id="ss-away-team-id" type="number" min="1"></div>
