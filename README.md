@@ -38,6 +38,11 @@ Configura `API_FOOTBALL_KEY` y, opcionalmente, `DATABASE_PATH` localmente. Nunca
 - `GET /v1/fixtures?date=YYYY-MM-DD&league_id=...` (requiere API key)
 - `POST /v1/sync/fixtures?date=YYYY-MM-DD&league_id=...` (sincroniza fixtures en SQLite)
 - `GET /v1/history?league_id=...&season=...&limit=100` (consulta el historial local)
+- `POST /v1/sync/league-season?league_id=...&season=...` (importa el historial de una competición)
+- `POST /v1/sync/statistics?fixture_id=...` (importa estadísticas de córners y tarjetas)
+- `GET /v1/statistics/teams?team_id=...` (consulta estadísticas almacenadas)
+- `GET /v1/models/elo/backtest?league_id=...&season=...` (valida Elo cronológicamente)
+- `POST /v1/markets/counts` (calcula líneas de córners/tarjetas a partir de tasas explícitas)
 
 ## Diseño
 
@@ -62,6 +67,10 @@ tests/
 5. Modelos de córners y tarjetas solo donde exista cobertura suficiente.
 6. Calibración, backtesting walk-forward y monitorización.
 7. Interfaz de usuario e integración con las fuentes disponibles.
+
+## Panel web
+
+Abre una terminal en la carpeta del proyecto y ejecuta `python -m http.server 5500 --directory web`. Inicia la API en otra terminal con `uvicorn football_predictor.api:app --reload` y visita http://127.0.0.1:5500. Configura la URL del backend en el panel si es diferente.
 
 ## Licencia y atribución
 
