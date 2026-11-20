@@ -41,6 +41,7 @@ Configura `API_FOOTBALL_KEY` y, opcionalmente, `DATABASE_PATH` localmente. Nunca
 - `POST /v1/sync/league-season?league_id=...&season=...` (importa el historial de una competición)
 - `POST /v1/sync/statistics?fixture_id=...` (importa estadísticas de córners y tarjetas)
 - `GET /v1/statistics/teams?team_id=...` (consulta estadísticas almacenadas)
+- `GET /v1/markets/team-counts?home_team_id=...&away_team_id=...&market=corners&line=8.5` (estima tasas con historial local, mínimo cinco partidos por sede)
 - `GET /v1/models/elo/backtest?league_id=...&season=...` (valida Elo cronológicamente)
 - `POST /v1/markets/counts` (calcula líneas de córners/tarjetas a partir de tasas explícitas)
 
