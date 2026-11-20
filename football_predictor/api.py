@@ -315,7 +315,7 @@ async def sofascore_status():
     return {
         "provider": "sofascore-experimental",
         "mode": "direct-read-only",
-        "warning": "Endpointos internos no oficiales; pueden cambiar o bloquearse.",
+        "warning": "Endpoints internos no oficiales; pueden cambiar o bloquearse.",
     }
 
 
@@ -349,6 +349,8 @@ async def sofascore_sync(
             event for event in events
             if (event.get("homeTeam") or {}).get("id")
             and (event.get("awayTeam") or {}).get("id")
+            and str((event.get("status") or {}).get("type") or "").lower()
+            in {"finished", "after extra time", "penalties"}
         ][:limit]
         normalized = []
         for event in selected:
