@@ -242,3 +242,64 @@ async def available_leagues(
         }
     except ApiFootballError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+# SofaScore data is imported from a user-provided export. No scraping or direct
+# requests to undocumented SofaScore endpoints are performed by this application.
+from football_predictor.storage.sofascore_store import (
+    import_sofascore_matches,
+    sofascore_team_count_rates,
+)
+
+
+class SofaScoreTeamImport(BaseModel):
+    team_id: int = Field(gt=0)
+    team_name: str = Field(min_length=1, max_length=120)
+    statistics: dict[str, int | None] = Field(default_factory=dict)
+
+
+class SofaScoreMatchImport(BaseModel):
+    event_id: int = Field(gt=0)
+    kickoff_utc: str = Field(min_length=10, max_length=40)
+    tournament_name: str | None = Field(default=None, max_length=160)
+    season: str | None = Field(default=None, max_length=40)
+    home: SofaScoreTeamImport
+    away: SofaScoreTeamImport
+    home_goals: int | None = Field(default=None, ge=0, le=50)
+    away_goals: int | None = Field(default=None, ge=0, le=50)
+    status: str | None = Field(default=None, max_length=40)
+
+
+class SofaScoreImportRequest(BaseModel):
+    matches: list[SofaScoreMatchImport] = Field(min_length=1, max_length=1000)
+
+
+@app.post("/v1/sofascore/import")
+async def import_sofascore_export(request: SofaScoreImportRequest):
+    """Import a normalized SofaScore export supplied by the user; no network scraping."""
+    saved = import_sofascore_matches(
+        [match.model_dump() for match in request.matches]
+    )
+    return {
+        "provider": "sofascore-import",
+        "received": len(request.matches),
+        "saved_or_updated": saved,
+        "note": "Los IDs SofaScore se guardan separados de API-Football. Solo importa datos que tengas derecho a reutilizar.",
+    }
+
+
+@app.get("/v1/sofascore/team-counts")
+async def sofascore_team_count_markets(
+    home_team_id: int = Query(ge=1),
+    away_team_id: int = Query(ge=1),
+    market: str = Query(pattern=r"^(corners|yellow_cards|red_cards)$"),
+    line: float = Query(ge=0, le=40),
+):
+    try:
+        rates = sofascore_team_count_rates(home_team_id, away_team_id, market)
+        probabilities = count_market(
+            rates["lambda_home"], rates["lambda_away"], line, market
+        )
+        return {**rates, "probabilities": probabilities}
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
