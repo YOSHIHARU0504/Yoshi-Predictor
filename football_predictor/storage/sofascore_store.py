@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from pathlib import Path
 from contextlib import closing
 from typing import Any
 
@@ -9,7 +10,8 @@ from football_predictor.config import settings
 
 
 def _connect(database_path: str | None = None) -> sqlite3.Connection:
-    path = database_path or settings.database_path
+    path = Path(database_path or settings.database_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(path)
     connection.row_factory = sqlite3.Row
     return connection
