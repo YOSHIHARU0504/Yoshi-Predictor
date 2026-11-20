@@ -6,7 +6,7 @@ from football_predictor.data.api_football import ApiFootballClient, ApiFootballE
 from football_predictor.models.poisson import predict_goal_markets
 from football_predictor.models.elo import run_elo_backtest
 from football_predictor.models.counts import count_market
-from football_predictor.storage.sqlite_store import (\n    list_fixtures, save_fixtures, save_fixture_statistics, list_team_statistics\n)
+from football_predictor.storage.sqlite_store import list_fixtures, save_fixtures, save_fixture_statistics, list_team_statistics
 
 app = FastAPI(
     title="FOOTBALL PREDICTOR",
