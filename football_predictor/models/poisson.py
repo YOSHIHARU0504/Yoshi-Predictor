@@ -19,8 +19,8 @@ def _validate(lambda_home: float, lambda_away: float) -> None:
 def score_matrix(lambda_home: float, lambda_away: float, max_goals: int = 10) -> list[list[float]]:
     """Return a truncated independent score probability matrix."""
     _validate(lambda_home, lambda_away)
-    if not 1 <= max_goals <= 20:
-        raise ValueError("max_goals must be between 1 and 20")
+    if not 1 <= max_goals <= 40:
+        raise ValueError("max_goals must be between 1 and 40")
     home = [_pmf(lambda_home, g) for g in range(max_goals + 1)]
     away = [_pmf(lambda_away, g) for g in range(max_goals + 1)]
     return [[ph * pa for pa in away] for ph in home]
@@ -46,7 +46,7 @@ def predict_goal_markets(lambda_home: float, lambda_away: float) -> dict[str, An
         totals[str(line)] = {"over": over, "under": 1.0 - over}
 
     top_scores = sorted(
-        ({"score": f"{h}-{a}", "probability": grid[h][a]} for h in range(11) for a in range(11)),
+        ({"score": f"{h}-{a}", "probability": grid[h][a]} for h in range(31) for a in range(31)),
         key=lambda item: item["probability"],
         reverse=True,
     )[:5]
