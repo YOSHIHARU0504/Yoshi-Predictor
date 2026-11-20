@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 
 from football_predictor.data.api_football import ApiFootballClient, ApiFootballError
 from football_predictor.models.poisson import predict_goal_markets
+from football_predictor.models.elo import run_elo_backtest
 from football_predictor.storage.sqlite_store import list_fixtures, save_fixtures
 
 app = FastAPI(
@@ -70,3 +71,46 @@ async def history(
     limit: int = Query(default=100, ge=1, le=500),
 ):
     return {"fixtures": list_fixtures(league_id=league_id, season=season, limit=limit)}
+
+
+@app.post("/v1/sync/league-season")
+async def sync_league_season(
+    league_id: int = Query(ge=1),
+    season: int = Query(ge=1900, le=2100),
+):
+    """Import all fixtures returned by API-Football for one league and season."""
+    try:
+        payload = await ApiFootballClient().fixtures_by_league_season(league_id, season)
+        items = payload.get("response") or []
+        saved = save_fixtures(items)
+        return {
+            "league_id": league_id,
+            "season": season,
+            "received": len(items),
+            "saved_or_updated": saved,
+            "provider": "api-football",
+            "coverage_note": "La disponibilidad depende del plan, temporada y cuota de API-Football.",
+        }
+    except ApiFootballError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.get("/v1/models/elo/backtest")
+async def elo_backtest(
+    league_id: int = Query(ge=1),
+    season: int | None = Query(default=None, ge=1900, le=2100),
+):
+    matches = list_fixtures(league_id=league_id, season=season, limit=500)
+    finished = [
+        match for match in matches
+        if match.get("home_goals") is not None
+        and match.get("away_goals") is not None
+        and match.get("home_team_id") is not None
+        and match.get("away_team_id") is not None
+    ]
+    if len(finished) < 30:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Historial insuficiente: se necesitan al menos 30 partidos terminados; hay {len(finished)}.",
+        )
+    return run_elo_backtest(finished)
