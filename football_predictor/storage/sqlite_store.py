@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 from typing import Any
 
@@ -17,7 +18,7 @@ def _connect(database_path: str | None = None) -> sqlite3.Connection:
 
 
 def initialize_database(database_path: str | None = None) -> None:
-    with _connect(database_path) as connection:
+    with closing(_connect(database_path)) as connection:
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS fixtures (
@@ -45,6 +46,7 @@ def initialize_database(database_path: str | None = None) -> None:
         connection.execute(
             "CREATE INDEX IF NOT EXISTS idx_fixtures_league ON fixtures(league_id, season)"
         )
+        connection.commit()
 
 
 def save_fixtures(fixtures: list[dict[str, Any]], database_path: str | None = None) -> int:
@@ -105,6 +107,7 @@ def save_fixtures(fixtures: list[dict[str, Any]], database_path: str | None = No
             """,
             rows,
         )
+        connection.commit()
     return len(rows)
 
 
