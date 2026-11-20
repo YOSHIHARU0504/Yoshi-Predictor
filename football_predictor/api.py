@@ -6,7 +6,7 @@ from football_predictor.data.api_football import ApiFootballClient, ApiFootballE
 from football_predictor.models.poisson import predict_goal_markets
 from football_predictor.models.elo import run_elo_backtest
 from football_predictor.models.counts import count_market
-from football_predictor.storage.sqlite_store import list_fixtures, save_fixtures, save_fixture_statistics, list_team_statistics
+from football_predictor.storage.sqlite_store import list_fixtures, save_fixtures, save_fixture_statistics, list_team_statistics, team_count_rates
 
 app = FastAPI(
     title="FOOTBALL PREDICTOR",
@@ -165,3 +165,21 @@ async def team_statistics(
     limit: int = Query(default=1000, ge=1, le=5000),
 ):
     return {"statistics": list_team_statistics(team_id=team_id, limit=limit)}
+
+
+
+@app.get("/v1/markets/team-counts")
+async def team_count_markets(
+    home_team_id: int = Query(ge=1),
+    away_team_id: int = Query(ge=1),
+    market: str = Query(pattern=r"^(corners|yellow_cards|red_cards)$"),
+    line: float = Query(ge=0, le=40),
+):
+    try:
+        rates = team_count_rates(home_team_id, away_team_id, market)
+        probabilities = count_market(
+            rates["lambda_home"], rates["lambda_away"], line, market
+        )
+        return {**rates, "probabilities": probabilities}
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
