@@ -81,7 +81,7 @@ def save_fixtures(fixtures: list[dict[str, Any]], database_path: str | None = No
             )
         )
 
-    with _connect(database_path) as connection:
+    with closing(_connect(database_path)) as connection:
         connection.executemany(
             """
             INSERT INTO fixtures (
@@ -128,7 +128,7 @@ def list_fixtures(
         params.append(season)
     where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
     params.append(max(1, min(limit, 500)))
-    with _connect(database_path) as connection:
+    with closing(_connect(database_path)) as connection:
         rows = connection.execute(
             f"SELECT fixture_id, kickoff_utc, status_short, league_id, league_name, "
             f"country, season, home_team, away_team, home_goals, away_goals, updated_at "
